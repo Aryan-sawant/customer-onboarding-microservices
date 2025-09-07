@@ -1,0 +1,23 @@
+# Compiled class files and packages
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE and OS files
+.idea/
+.project
+.classpath
+.settings/
+*.iml
+.DS_Store
+
+# Log files
+*.log
+
+# Python virtual environment
+venv/
+/venv/
+__pycache__/
+*.pyc
