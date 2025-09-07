@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OFSS Bank Registration - Final Step</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* The main stylesheet provides .login-wrapper, .branding-pane, and .form-pane */
+        
+        /* --- Premium Progress Bar (Consistent across all steps) --- */
+        .progress-bar-container { margin-bottom: 2.5rem; }
+        .progress-bar { display: flex; justify-content: space-between; list-style: none; padding: 0; margin: 0; position: relative; }
+        .progress-bar::before { content: ''; position: absolute; top: 18px; left: 0; right: 0; height: 4px; background-color: var(--light-bg); z-index: 1; }
+        .progress-indicator { position: absolute; top: 18px; left: 0; height: 4px; background: var(--primary-red); z-index: 2; transition: width 0.4s ease; }
+        .progress-step { position: relative; z-index: 3; text-align: center; width: 20%; }
+        .progress-step-circle { height: 36px; width: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; background-color: #ffffff; border: 3px solid var(--light-bg); transition: all 0.3s ease; }
+        .progress-step-label { margin-top: 0.75rem; font-size: 0.85rem; font-weight: 500; color: var(--text-light); transition: all 0.3s ease; }
+        .progress-step.active .progress-step-circle { border-color: var(--primary-red); color: var(--primary-red); }
+        .progress-step.active .progress-step-label { color: var(--text-dark); font-weight: 600; }
+        .progress-step.completed .progress-step-circle { background-color: var(--primary-red); border-color: var(--primary-red); color: #ffffff; }
+        
+        /* --- Form Sectioning --- */
+        .form-section {
+            padding: 1.5rem;
+            margin-top: 2rem;
+            background-color: rgba(248, 250, 252, 0.7); /* Slightly transparent light background */
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .form-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        /* --- Review Section Styling --- */
+        .review-item { display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.95rem; border-bottom: 1px solid #e5e9f2; }
+        .review-item:last-child { border-bottom: none; }
+        .review-item strong { color: var(--text-light); }
+        .review-item span { font-weight: 500; color: var(--text-dark); }
+        
+        /* --- Custom File Upload Styling --- */
+        .file-upload-group {
+            padding: 1rem 0;
+        }
+        .file-upload-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-upload-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(145deg, #64748B, #475569);
+            color: white !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(51, 65, 85, 0.1), inset 0 -1px 0 rgba(0,0,0,0.1);
+        }
+        .file-upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(51, 65, 85, 0.15), inset 0 -1px 0 rgba(0,0,0,0.1);
+        }
+        .file-name-display {
+            font-style: italic;
+            color: var(--text-light);
+        }
+
+        /* --- Action Buttons --- */
+        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        
+        <div class="branding-pane">
+            <div class="logo-container">
+                <img th:src="@{https://img.etimg.com/thumb/width-1200,height-900,imgsize-8519,resizemode-75,msid-114568605/markets/stocks/news/oracle-financial-services-shares-in-focus-after-q2-profit-jumps-38-yoy-to-rs-578-crore.jpg}" alt="OFSS Bank Logo"/>
+            </div>
+            <h1>The Final Step</h1>
+            <p>Just one last check to ensure all your details are correct. Thank you for choosing us for your banking needs.</p>
+            <ul class="features-list">
+                <li><div class="icon">✓</div> Encrypted & Secure Submission</li>
+                <li><div class="icon">✓</div> Fast Application Processing</li>
+                <li><div class="icon">✓</div> Welcome Kit on its way!</li>
+            </ul>
+        </div>
+        
+        <div class="form-pane">
+            
+            <h2 style="text-align: left;">New Account Registration</h2>
+            
+            <div class="progress-bar-container">
+                <ul class="progress-bar">
+                    <div class="progress-indicator" style="width: 100%;"></div>
+                    <li class="progress-step completed"><div class="progress-step-circle">1</div><div class="progress-step-label">Personal</div></li>
+                    <li class="progress-step completed"><div class="progress-step-circle">2</div><div class="progress-step-label">Nominee</div></li>
+                    <li class="progress-step completed"><div class="progress-step-circle">3</div><div class="progress-step-label">Services</div></li>
+                    <li class="progress-step completed"><div class="progress-step-circle">4</div><div class="progress-step-label">Documents</div></li>
+                    <li class="progress-step active"><div class="progress-step-circle">5</div><div class="progress-step-label">Finish</div></li>
+                </ul>
+            </div>
+            
+            <h3 style="text-align: left; font-weight: 600; color: var(--text-dark); margin-bottom: 2rem;">Step 5: Review, Upload, and Finish</h3>
+            
+            <form th:action="@{/ui/register/submit}" th:object="${registrationRequest}" method="post" enctype="multipart/form-data">
+                
+                <div class="form-section">
+                    <h4 class="form-section-title">Review Your Details</h4>
+                    <div class="review-item"><strong>Name:</strong> <span th:text="*{fullname}"></span></div>
+                    <div class="review-item"><strong>Email:</strong> <span th:text="*{email}"></span></div>
+                    <div class="review-item"><strong>PAN:</strong> <span th:text="*{pan}"></span></div>
+                    <div class="review-item"><strong>Account Type:</strong> <span th:text="*{requestedAccountType}"></span></div>
+                    <div th:if="*{nominee != null and nominee.name != null and not #strings.isEmpty(nominee.name)}" class="review-item"><strong>Nominee:</strong> <span th:text="*{nominee.name}"></span></div>
+                    <div th:unless="*{nominee != null and nominee.name != null and not #strings.isEmpty(nominee.name)}" class="review-item"><strong>Nominee:</strong> <span>Not provided</span></div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="form-section-title">Upload Documents</h4>
+                    <div class="file-upload-group">
+                        <label>Passport Size Photo (Image only)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="passportPhoto" name="passportPhoto" accept="image/png, image/jpeg" required>
+                            <label for="passportPhoto" class="file-upload-button">Choose File</label>
+                            <span class="file-name-display">No file selected...</span>
+                        </div>
+                    </div>
+                     <div class="file-upload-group">
+                        <label>PAN Card (Image or PDF)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="panDoc" name="panDoc" accept="image/png, image/jpeg, application/pdf" required>
+                            <label for="panDoc" class="file-upload-button">Choose File</label>
+                            <span class="file-name-display">No file selected...</span>
+                        </div>
+                    </div>
+                     <div class="file-upload-group">
+                        <label>Aadhaar Card (Image or PDF)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="aadhaarDoc" name="aadhaarDoc" accept="image/png, image/jpeg, application/pdf" required>
+                            <label for="aadhaarDoc" class="file-upload-button">Choose File</label>
+                            <span class="file-name-display">No file selected...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4 class="form-section-title">Create Your Login Credentials</h4>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="username">Create a Username</label><input type="text" id="username" th:field="*{username}" required /><div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-message"></div></div>
+                        <div class="form-group"><label for="password">Create a Password</label><input type="password" id="password" th:field="*{password}" required /><div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></div></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/ui/register/documents}" class="btn btn-secondary">&larr; Back</a>
+                    <button type="submit" class="btn">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to display the chosen file name next to the upload button
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[type="file"]').forEach(fileInput => {
+                const wrapper = fileInput.closest('.file-input-wrapper');
+                if (wrapper) {
+                    const display = wrapper.querySelector('.file-name-display');
+                    if (display) {
+                        fileInput.addEventListener('change', function(e) {
+                            const fileName = e.target.files.length > 0 ? e.target.files[0].name : 'No file selected...';
+                            display.textContent = fileName;
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

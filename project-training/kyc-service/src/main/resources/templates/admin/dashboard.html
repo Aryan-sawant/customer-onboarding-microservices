@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .action-cell {
+            gap: 0.5rem; /* Tighter spacing for more icons */
+            flex-wrap: wrap;
+        }
+        .action-cell .doc-icon {
+            display: inline-block;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background-color: var(--light-bg);
+            color: var(--text-light);
+            transition: all 0.2s ease;
+        }
+        .action-cell .doc-icon:hover {
+            background-color: var(--text-light);
+            color: #fff;
+        }
+        .pagination { 
+            margin-top: 1.5rem; 
+            text-align:center; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 0.5rem;
+        }
+        .pagination a {
+            text-decoration: none;
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+        .pagination a:hover, .pagination a.current {
+            background-color: var(--primary-red);
+            color: #fff !important;
+            border-color: var(--primary-red);
+        }
+        .pagination a.disabled {
+            color: var(--border-color);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="dashboard-grid">
+
+    <header class="dashboard-header">
+        <h1 style="text-align:left;">Admin Dashboard</h1>
+        <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+        </form>
+    </header>
+
+    <main class="main-content">
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        
+        <div class="stats-container">
+            <div class="stat-card total"><div class="stat-info"><h3>Total Applications</h3><p class="stat-number" th:text="${totalApplications}"></p></div></div>
+            <div class="stat-card pending"><div class="stat-info"><h3>Pending Review</h3><p class="stat-number" th:text="${pendingCount}"></p></div></div>
+            <div class="stat-card verified"><div class="stat-info"><h3>Verified Customers</h3><p class="stat-number" th:text="${verifiedCount}"></p></div></div>
+        </div>
+
+        <div class="search-bar">
+            <form th:action="@{/admin/dashboard}" method="get">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Search applications by ID, Name, PAN, Status..."/>
+                <button type="submit" class="btn">Search</button>
+                <a th:if="${searchActive}" th:href="@{/admin/dashboard}" class="btn btn-secondary">Clear</a>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead><tr><th>App/Cust ID</th><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <th:block th:with="items = ${searchActive ? searchResults : (applications != null ? applications.content : null)}">
+                        
+                        <tr th:if="${items == null or #lists.isEmpty(items)}">
+                            <td colspan="5" style="text-align: center;">No applications found.</td>
+                        </tr>
+                        
+                        <tr th:each="app : ${items}">
+                            
+                            <th:block th:with="
+                                isKycApp=${app.class.simpleName == 'KycApplication'},
+                                statusString=${isKycApp ? app.kycStatus.toString() : app.kycStatus},
+                                idForDisplay=${app.id},
+                                idForLinks=${app.id},
+                                customerIdForActions=${isKycApp ? app.customerId : app.id}
+                            ">
+                                <td th:text="${idForDisplay}"></td>
+                                <td th:text="${app.fullName}"></td>
+                                <td th:text="${app.email}"></td>
+                                <td>
+                                    <span class="badge" th:classappend="${statusString}" th:text="${statusString}"></span>
+                                </td>
+                                <td class="action-cell">
+                                    <a th:href="@{/admin/customer/{id}(id=${idForLinks})}" class="btn btn-sm" th:text="${statusString == 'PENDING' ? 'Review' : 'View'}"></a>
+                                    
+                                    <th:block th:if="${statusString == 'VERIFIED' or statusString == 'INACTIVE'}">
+                                        <a th:href="@{/admin/customer/{id}/edit(id=${customerIdForActions})}" class="btn btn-sm btn-secondary">Edit</a>
+                                        <form th:action="@{/admin/customer/{id}/deactivate(id=${customerIdForActions})}" method="post" onsubmit="return confirm('Are you sure you want to change this account status?');">
+                                            <button type="submit" class="btn btn-sm btn-danger" th:text="${statusString == 'INACTIVE' ? 'Activate' : 'Deactivate'}"></button>
+                                        </form>
+                                    </th:block>
+
+                                    <a th:href="@{/api/applications/{id}/document/passport(id=${idForLinks})}" target="_blank" class="doc-icon" title="View Passport Photo"><i class="fas fa-user"></i></a>
+                                    <a th:href="@{/api/applications/{id}/document/pan(id=${idForLinks})}" target="_blank" class="doc-icon" title="View PAN Card"><i class="fas fa-id-card"></i></a>
+                                    <a th:href="@{/api/applications/{id}/document/aadhaar(id=${idForLinks})}" target="_blank" class="doc-icon" title="View Aadhaar Card"><i class="fas fa-fingerprint"></i></a>
+                                </td>
+                            </th:block>
+                        </tr>
+                    </th:block>
+                </tbody>
+            </table>
+        </div>
+        
+        <div th:if="${!searchActive and applications != null and applications.totalPages > 1}" class="pagination">
+             <a th:href="@{/admin/dashboard(page=0)}" th:classappend="${applications.first ? 'disabled' : ''}">&laquo;</a>
+             <a th:href="@{/admin/dashboard(page=${applications.number - 1})}" th:classappend="${applications.first ? 'disabled' : ''}">&lsaquo;</a>
+             <span th:each="i : ${#numbers.sequence(0, applications.totalPages - 1)}" th:if="${i >= applications.number - 2 && i <= applications.number + 2}">
+                 <a th:href="@{/admin/dashboard(page=${i})}" th:classappend="${i == applications.number ? 'current' : ''}" th:text="${i + 1}"></a>
+             </span>
+             <a th:href="@{/admin/dashboard(page=${applications.number + 1})}" th:classappend="${applications.last ? 'disabled' : ''}">&rsaquo;</a>
+             <a th:href="@{/admin/dashboard(page=${applications.totalPages - 1})}" th:classappend="${applications.last ? 'disabled' : ''}">&raquo;</a>
+        </div>
+    </main>
+    
+    <div class="chatbot-fab" id="chatbot-toggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="white" class="bi bi-robot" viewBox="0 0 16 16"><path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z"/><path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z"/></svg>
+    </div>
+    <div class="chat-widget" id="chat-widget">
+        <div class="chat-header">OFSS AI Assistant</div>
+        <div class="chat-body" id="chat-body">
+            <div class="bot-msg"><p>Hello Admin! How can I help you today?</p></div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Ask about applications...">
+            <button class="btn btn-sm" id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Chatbot script remains unchanged
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatbotToggle = document.getElementById('chatbot-toggle');
+            const chatWidget = document.getElementById('chat-widget');
+            const sendBtn = document.getElementById('send-btn');
+            const chatInput = document.getElementById('chat-input');
+            const chatBody = document.getElementById('chat-body');
+            let chatHistory = [];
+            chatbotToggle.addEventListener('click', () => chatWidget.classList.toggle('active'));
+            async function sendMessage() {
+                const query = chatInput.value.trim();
+                if (!query) return;
+                appendMessage(query, 'user');
+                chatInput.value = '';
+                appendMessage('Thinking...', 'bot', true);
+                try {
+                    const response = await fetch('http://localhost:8080/api/chatbot-proxy/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query, role: 'ADMIN', history: chatHistory })
+                    });
+                    document.getElementById('thinking-msg')?.remove();
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                    const data = await response.json();
+                    appendMessage(data.response, 'bot');
+                    chatHistory = data.history;
+                } catch (error) {
+                    console.error('Chatbot error:', error);
+                    document.getElementById('thinking-msg')?.remove();
+                    appendMessage('Sorry, an error occurred. Please try again.', 'bot');
+                }
+            }
+            function appendMessage(message, type, isThinking = false) {
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = type === 'user' ? 'user-msg' : 'bot-msg';
+                const p = document.createElement('p');
+                p.innerHTML = message.replace(/\n/g, '<br>');
+                if (isThinking) p.id = 'thinking-msg';
+                msgWrapper.appendChild(p);
+                chatBody.appendChild(msgWrapper);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        });
+    </script>
+</body>
+</html>

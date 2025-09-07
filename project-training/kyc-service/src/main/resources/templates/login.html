@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OFSS Bank - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Inline styles are moved to the main CSS file -->
+</head>
+<body>
+    <div class="login-wrapper">
+        <!-- Left Branding Pane -->
+        <div class="branding-pane">
+            <div class="logo-container">
+                <!-- *** THE FIX: The logo image is now inside its container *** -->
+                <img th:src="@{https://img.etimg.com/thumb/width-1200,height-900,imgsize-8519,resizemode-75,msid-114568605/markets/stocks/news/oracle-financial-services-shares-in-focus-after-q2-profit-jumps-38-yoy-to-rs-578-crore.jpg}" alt="OFSS Bank Logo" />
+            </div>
+            <h1>Secure Digital Banking</h1>
+            <p>Access your accounts, manage your finances, and get personalized insights, all in one place.</p>
+            <ul class="features-list">
+                <li>
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>
+                    </div>
+                    <span>Fast & Easy Online Onboarding</span>
+                </li>
+                <li>
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.06.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.952-.325-1.922-.65-2.837-.855A1.088 1.088 0 0 0 8 1.5c-.198 0-.388.062-.533.161zM4.177 2.82A60.165 60.165 0 0 1 8 2.5c1.933 0 3.541.26 4.662.524.542.133.633.256.42.746-.223.51-.555 1.137-1.012 1.818-.328.483-.679.92-1.06 1.332-.395.42-.82.78-1.282 1.075-1.01.65-2.247 1.002-3.414 1.002-1.167 0-2.404-.352-3.414-1.002-.462-.295-.887-.655-1.282-1.075-.38-.412-.72-.85-.1.06-1.332-.457-.68-.888-1.328-.213-.49zM9 13a1 1 0 0 1 1-1v-1a2 2 0 1 0-4 0v1a1 1 0 0 1 1 1h2z"/></svg>
+                    </div>
+                    <span>Secure & Private Financial Data</span>
+                </li>
+                 <li>
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514ZM11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/></svg>
+                    </div>
+                    <span>Personalized Banking Experience</span>
+                </li>
+            </ul>
+        </div>
+        <!-- Right Form Pane -->
+        <div class="form-pane">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Login to your account to continue.</p>
+
+            <div th:if="${param.error}" class="alert alert-danger">Invalid username or password.</div>
+            <div th:if="${param.logout}" class="alert alert-success">You have been logged out.</div>
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Username or Email:</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Login</button>
+            </form>
+            <div class="form-link">
+                <p>New user? <a th:href="@{/ui/register}">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Customer Profile</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <style>
+        /* Override the body centering for this page to allow for a full-width container */
+        body {
+            display: block;
+            align-items: stretch;
+            justify-content: flex-start;
+            min-height: auto;
+        }
+
+        /* Use the .container class from your stylesheet for a centered, card-like wrapper */
+        .page-wrapper {
+            max-width: 1200px; /* Wider for better content display */
+            margin: 2rem auto;
+            padding: 2.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin: 0;
+            text-align: left;
+        }
+
+        .page-header h1 span {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        /* The main grid for laying out the information cards */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            align-items: start; /* Important for cards with different heights */
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.7); /* Slightly transparent background */
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .info-card h4 {
+            text-align: left;
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 0.75rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0; /* Increased vertical padding */
+            font-size: 0.95rem;
+            border-bottom: 1px solid #E5E9F2; /* Softer separator */
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item strong {
+            color: var(--text-light); /* Softer label color from your theme */
+            margin-right: 1rem;
+        }
+
+        .info-item span {
+            text-align: right;
+            word-break: break-word;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Ensure theme badges override span styling */
+        .info-item .badge {
+            color: white !important;
+            font-weight: 600;
+        }
+        
+        /* Utility class to make a grid item span both columns */
+        .grid-col-span-2 {
+            grid-column: span 2;
+        }
+        
+        /* Action buttons at the bottom */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding-top: 2.5rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- Document Viewer Styles --- */
+        .doc-viewer {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .doc-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .doc-link .preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 220px;
+            height: 130px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: #F8FAFC;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .doc-link .preview:hover {
+            border-color: var(--primary-red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .doc-link .preview-text {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--primary-red);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .doc-link .doc-title {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Make the grid responsive */
+        @media (max-width: 992px) {
+            .details-grid {
+                grid-template-columns: 1fr; /* Stack cards into a single column */
+            }
+            .grid-col-span-2 {
+                grid-column: span 1; /* Reset the span */
+            }
+            .page-wrapper {
+                 padding: 1.5rem;
+                 margin: 1rem;
+            }
+        }
+        
+        /* Your existing modal styles are fine and will work with this layout */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 90vw; max-height: 90vh; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; color: #fff; cursor: pointer; font-weight: bold; z-index: 1001; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .rejection-modal-content { background: #fff; border-radius: 12px; padding: 2.5rem; max-width: 500px; text-align: left; }
+        .rejection-modal-content h3 { margin-top: 0; text-align: left; }
+        .rejection-modal-content textarea { width: 100%; min-height: 100px; margin-top: 1rem; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); box-sizing: border-box; }
+        .rejection-modal-content .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<div class="container page-wrapper">
+
+    <header class="page-header">
+        <h1 th:if="${customer}">Review Profile: <span th:text="${customer.fullName}"></span></h1>
+        <a th:href="@{/admin/dashboard}" class="btn">Back to Dashboard</a>
+    </header>
+    
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <main th:if="${customer}">
+        <div class="details-grid">
+            
+            <div class="info-card">
+                <h4>Personal Details</h4>
+                <div class="info-item" th:if="${customer.id}"><strong>Customer/App ID:</strong> <span th:text="${customer.id}"></span></div>
+                <div class="info-item"><strong>Full Name:</strong> <span th:text="${customer.fullName}"></span></div>
+                <div class="info-item"><strong>Date of Birth:</strong> <span th:text="${#temporals.format(customer.dob, 'dd-MMM-yyyy')}"></span></div>
+                <div class="info-item"><strong>Gender:</strong> <span th:text="${customer.gender}"></span></div>
+                <div class="info-item"><strong>Marital Status:</strong> <span th:text="${customer.maritalStatus}"></span></div>
+                <div class="info-item"><strong>Father's Name:</strong> <span th:text="${customer.fathersName}"></span></div>
+                <div class="info-item"><strong>Nationality:</strong> <span th:text="${customer.nationality}"></span></div>
+                <div class="info-item"><strong>Profession:</strong> <span th:text="${customer.profession}"></span></div>
+                <div class="info-item"><strong>Address:</strong> <span th:text="${customer.address}"></span></div>
+            </div>
+            
+            <div class="info-card">
+                <h4>Contact & Identity</h4>
+                <div class="info-item"><strong>Email:</strong> <span th:text="${customer.email}"></span></div>
+                <div class="info-item"><strong>Phone:</strong> <span th:text="${customer.phone}"></span></div>
+                <div class="info-item"><strong>PAN:</strong> <span th:text="${customer.pan}"></span></div>
+                <div class="info-item"><strong>Aadhaar:</strong> <span th:text="${customer.aadhaar}"></span></div>
+                <div class="info-item"><strong>KYC Status:</strong> <span class="badge" th:classappend="${customer.kycStatus}" th:text="${customer.kycStatus}"></span></div>
+                <div class="info-item" th:if="${customer instanceof T(com.onboarding.dto.CustomerDTO)}">
+                    <strong>Permanent Customer ID:</strong> <span th:text="${customer.id}"></span>
+                </div>
+            </div>
+
+            <div class="info-card" th:if="${account != null}">
+                <h4>Account Details</h4>
+                <div class="info-item"><strong>Account Number:</strong> <span th:text="${account.accountNumber}"></span></div>
+                <div class="info-item"><strong>Account Status:</strong> <span class="badge" th:classappend="${account.accountStatus}" th:text="${account.accountStatus}"></span></div>
+                <div class="info-item"><strong>Account Type:</strong> <span th:text="${account.accountType}"></span></div>
+                <div class="info-item"><strong>Date of Opening:</strong> <span th:text="${account.dateOfAccountOpening != null ? #temporals.format(account.dateOfAccountOpening, 'dd-MMM-yyyy HH:mm') : 'N/A'}"></span></div>
+                <div class="info-item"><strong>Branch:</strong> <span th:text="${account.branchName}"></span></div>
+                <div class="info-item"><strong>IFSC Code:</strong> <span th:text="${account.ifscCode}"></span></div>
+            </div>
+
+            <div class="info-card" th:if="${(customer instanceof T(com.onboarding.model.KycApplication) and customer.kycNominee != null) or (customer instanceof T(com.onboarding.dto.CustomerDTO) and customer.nominee != null)}">
+                <h4>Nominee Details</h4>
+                <div th:if="${customer instanceof T(com.onboarding.model.KycApplication) and customer.kycNominee != null}">
+                    <div class="info-item"><strong>Name:</strong> <span th:text="${customer.kycNominee.name}"></span></div>
+                    <div class="info-item"><strong>Mobile:</strong> <span th:text="${customer.kycNominee.mobile}"></span></div>
+                    <div class="info-item"><strong>Aadhaar:</strong> <span th:text="${customer.kycNominee.aadhaarNumber}"></span></div>
+                </div>
+                <div th:if="${customer instanceof T(com.onboarding.dto.CustomerDTO) and customer.nominee != null}">
+                    <div class="info-item"><strong>Name:</strong> <span th:text="${customer.nominee.name}"></span></div>
+                    <div class="info-item"><strong>Mobile:</strong> <span th:text="${customer.nominee.mobile}"></span></div>
+                    <div class="info-item"><strong>Aadhaar:</strong> <span th:text="${customer.nominee.aadhaarNumber}"></span></div>
+                </div>
+            </div>
+
+            <div class="info-card grid-col-span-2" th:if="${customer instanceof T(com.onboarding.model.KycApplication)}">
+                <h4>Uploaded Documents</h4>
+                <div class="doc-viewer">
+                    <a class="doc-link" th:if="${customer.passportPhotoBase64}" th:href="@{/api/applications/{id}/document/passport(id=${customer.id})}" target="_blank">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">Passport Photo</span>
+                    </a>
+                    <a class="doc-link" th:if="${customer.panPhotoBase64}" th:href="@{/api/applications/{id}/document/pan(id=${customer.id})}" target="_blank">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">PAN Card</span>
+                    </a>
+                    <a class="doc-link" th:if="${customer.aadhaarPhotoBase64}" th:href="@{/api/applications/{id}/document/aadhaar(id=${customer.id})}" target="_blank">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">Aadhaar Card</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${customer.kycStatus != null and customer.kycStatus.toString() == 'PENDING'}" class="action-buttons">
+            <form th:action="@{/admin/customer/{id}/process(id=${customer.id})}" method="post">
+                <input type="hidden" name="approved" value="true" />
+                <button type="submit" class="btn btn-success">Approve Application</button>
+            </form>
+            <button type="button" class="btn btn-danger" onclick="openRejectionModal()">Reject Application</button>
+        </div>
+
+    </main>
+</div>
+    
+<div id="rejectionModal" class="modal-overlay" onclick="closeRejectionModal()">
+    <div class="rejection-modal-content" onclick="event.stopPropagation();">
+        <h3>Reason for Rejection</h3>
+        <p>This reason will be sent to the applicant via email.</p>
+        <form th:action="@{/admin/customer/{id}/process(id=${customer?.id})}" method="post">
+            <input type="hidden" name="approved" value="false" />
+            <textarea name="rejectionReason" placeholder="e.g., PAN card image is blurry or name mismatch..." required minlength="10"></textarea>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRejectionModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rejectionModal = document.getElementById('rejectionModal');
+        
+        window.openRejectionModal = function() {
+            rejectionModal.style.display = 'flex';
+        }
+        
+        window.closeRejectionModal = function() {
+            rejectionModal.style.display = 'none';
+        }
+
+        // Close modal on escape key press
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeRejectionModal();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

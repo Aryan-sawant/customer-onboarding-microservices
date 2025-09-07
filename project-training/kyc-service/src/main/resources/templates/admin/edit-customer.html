@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Edit Customer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* Override the body centering from the main stylesheet for this page */
+        body {
+            display: block;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
+        /* Use the .container class but give it a specific max-width for forms */
+        .form-container {
+            max-width: 900px; /* A good width for forms */
+            margin: 2rem auto;
+            padding: 2.5rem; /* More spacious padding */
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-header .logo-container {
+            width: 80px;
+            height: 80px;
+            background-color: #fff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .form-header .logo-container img {
+            max-width: 75%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .form-header h1 {
+            color: var(--text-dark); /* Use standard dark text for the title */
+            font-size: 2rem;
+        }
+        
+        .form-header .subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        /* Styling for logical sections within the form */
+        .form-section {
+            margin-top: 2rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-red);
+            text-align: left; /* Override centered h-tags */
+        }
+
+        /* The .form-grid from your main CSS will handle the layout of the inputs */
+        
+        /* Container for the final action buttons */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 1rem;
+            padding-top: 2rem;
+            margin-top: 2.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Make the button order logical on mobile (Cancel on left, Save on right) */
+        .form-actions .btn-secondary {
+            order: 1;
+        }
+        .form-actions .btn {
+            order: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container form-container">
+        
+        <div class="form-header">
+        <div class="logo-container"><img th:src="@{https://img.etimg.com/thumb/width-1200,height-900,imgsize-8519,resizemode-75,msid-114568605/markets/stocks/news/oracle-financial-services-shares-in-focus-after-q2-profit-jumps-38-yoy-to-rs-578-crore.jpg}" alt="OFSS Bank Logo" style="max-width: 120px; border-radius: 8px;"/></div>
+           
+            <h1>Edit Customer Profile</h1>
+            <p th:if="${updateRequest}" class="subtitle">
+                Editing profile for <strong th:text="${updateRequest.fullName}"></strong> (ID: <span th:text="${customerId}"></span>)
+            </p>
+        </div>
+
+        <form th:action="@{/admin/customer/{id}/edit(id=${customerId})}" th:object="${updateRequest}" method="post">
+            
+            <div class="form-section">
+                <h3 class="form-section-title">Personal & Contact Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" th:field="*{fullName}" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" th:field="*{email}" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" th:field="*{phone}" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="fathersName">Father's Name</label>
+                        <input type="text" id="fathersName" th:field="*{fathersName}" />
+                    </div>
+                    <div class="form-group">
+                        <label for="maritalStatus">Marital Status</label>
+                        <select id="maritalStatus" th:field="*{maritalStatus}">
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profession">Profession</label>
+                        <input type="text" id="profession" th:field="*{profession}" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="address">Full Address</label>
+                        <input type="text" id="address" th:field="*{address}" required />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="form-section-title">Nominee Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nomineeName">Nominee Full Name</label>
+                        <input type="text" id="nomineeName" th:field="*{nominee.name}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="nomineeMobile">Nominee Mobile</label>
+                        <input type="tel" id="nomineeMobile" th:field="*{nominee.mobile}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="nomineeAadhaar">Nominee Aadhaar</label>
+                        <input type="text" id="nomineeAadhaar" th:field="*{nominee.aadhaarNumber}"/>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="nomineeAddress">Nominee Address</label>
+                        <input type="text" id="nomineeAddress" th:field="*{nominee.address}"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn">Save Changes</button>
+            </div>
+
+        </form>
+    </div>
+</body>
+</html>

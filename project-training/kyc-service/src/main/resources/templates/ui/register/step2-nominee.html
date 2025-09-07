@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OFSS Bank Registration - Step 2</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* The main stylesheet provides .login-wrapper, .branding-pane, and .form-pane */
+        
+        /* --- Premium Progress Bar --- */
+        .progress-bar-container {
+            margin-bottom: 2.5rem;
+        }
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+        /* The grey line connecting the steps */
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 18px; /* Vertically center the line with the circles */
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: var(--light-bg);
+            z-index: 1;
+        }
+        /* The colored progress line */
+        .progress-indicator {
+            position: absolute;
+            top: 18px;
+            left: 0;
+            height: 4px;
+            background: var(--primary-red);
+            z-index: 2;
+            transition: width 0.4s ease;
+        }
+
+        .progress-step {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            width: 20%; /* 100% / 5 steps */
+        }
+        .progress-step-circle {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            background-color: #ffffff;
+            border: 3px solid var(--light-bg);
+            transition: all 0.3s ease;
+        }
+        .progress-step-label {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        /* --- Active State --- */
+        .progress-step.active .progress-step-circle {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+        .progress-step.active .progress-step-label {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        /* --- Completed State --- */
+        .progress-step.completed .progress-step-circle {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            color: #ffffff;
+        }
+        
+        /* --- Action Buttons --- */
+        .form-actions {
+            display: flex;
+            justify-content: space-between; /* Space out the Skip and Save buttons */
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        
+        <div class="branding-pane">
+         <div class="logo-container">
+                <img th:src="@{https://img.etimg.com/thumb/width-1200,height-900,imgsize-8519,resizemode-75,msid-114568605/markets/stocks/news/oracle-financial-services-shares-in-focus-after-q2-profit-jumps-38-yoy-to-rs-578-crore.jpg}" alt="OFSS Bank Logo"/>
+            </div>
+
+            <h1>Welcome to Digital Banking</h1>
+            <p>Experience seamless, secure, and smart banking from anywhere. Open your account in just a few simple steps.</p>
+            <ul class="features-list">
+                <li><div class="icon">✓</div> Instant Account Activation</li>
+                <li><div class="icon">✓</div> Fully Digital KYC Process</li>
+                <li><div class="icon">✓</div> Access to Premium Services</li>
+            </ul>
+        </div>
+        
+        <div class="form-pane">
+            
+            <h2 style="text-align: left;">New Account Registration</h2>
+            
+            <div class="progress-bar-container">
+                <ul class="progress-bar">
+                    <div class="progress-indicator" style="width: 25%;"></div>
+                    <li class="progress-step completed"><div class="progress-step-circle">1</div><div class="progress-step-label">Personal</div></li>
+                    <li class="progress-step active"><div class="progress-step-circle">2</div><div class="progress-step-label">Nominee</div></li>
+                    <li class="progress-step"><div class="progress-step-circle">3</div><div class="progress-step-label">Services</div></li>
+                    <li class="progress-step"><div class="progress-step-circle">4</div><div class="progress-step-label">Documents</div></li>
+                    <li class="progress-step"><div class="progress-step-circle">5</div><div class="progress-step-label">Finish</div></li>
+                </ul>
+            </div>
+            
+            <h3 style="text-align: left; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem;">Step 2: Nominee Details</h3>
+            <p class="subtitle" style="text-align: left; margin-bottom: 2rem;">Adding a nominee is highly recommended for the security of your funds.</p>
+
+            <form th:action="@{/ui/register/step2}" th:object="${registrationRequest}" method="post">
+                <div th:object="${registrationRequest.nominee}">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="nomineeName">Nominee Full Name</label><input type="text" id="nomineeName" th:field="*{name}"/><div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div></div>
+                        <div class="form-group"><label for="nomineeMobile">Nominee Mobile</label><input type="tel" id="nomineeMobile" th:field="*{mobile}"/><div th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}" class="error-message"></div></div>
+                        <div class="form-group"><label for="nomineeAadhaar">Nominee Aadhaar</label><input type="text" id="nomineeAadhaar" th:field="*{aadhaarNumber}"/><div th:if="${#fields.hasErrors('aadhaarNumber')}" th:errors="*{aadhaarNumber}" class="error-message"></div></div>
+                        <div class="form-group full-width"><label for="nomineeAddress">Nominee Address</label><input type="text" id="nomineeAddress" th:field="*{address}"/><div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="error-message"></div></div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a th:href="@{/ui/register/personal}" class="btn btn-secondary">&larr; Back</a>
+                    <button type="submit" name="addNominee" value="true" class="btn">Save & Continue &rarr;</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* --- Base Layout --- */
+        body {
+            display: block;
+        }
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin: 0;
+            text-align: left;
+        }
+        .dashboard-header h1 span {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        /* --- Experiential Status Hero --- */
+        .status-hero {
+            position: relative;
+            padding: 2.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            color: #fff;
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+        }
+        .status-hero h2 {
+            font-size: 2.2rem;
+            margin: 0 0 0.5rem 0;
+            color: inherit;
+            text-align: left;
+            font-weight: 700;
+        }
+        .status-hero p {
+            font-size: 1.1rem;
+            max-width: 60%;
+            text-align: left;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .hero-icon {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8rem;
+            opacity: 0.08;
+        }
+
+        /* State Backgrounds */
+        .status-hero.PENDING {
+            background: linear-gradient(135deg, #374151, #111827);
+            border: 1px solid #4b5563;
+        }
+        .status-hero.VERIFIED, .status-hero.ACTIVE {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+        .status-hero.REJECTED, .status-hero.INACTIVE {
+            background: linear-gradient(135deg, var(--danger), #B91C1C);
+        }
+        
+        /* --- Virtual Debit Card (for VERIFIED state) --- */
+        .virtual-card-container {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%) rotate(10deg) scale(1.1);
+            perspective: 1000px;
+        }
+        .virtual-card {
+            width: 300px;
+            height: 180px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #1f2937, #374151);
+            color: #d1d5db;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .card-chip {
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(135deg, #d4af37, #a27b00);
+            border-radius: 5px;
+        }
+        .card-number {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .card-holder { font-size: 0.8rem; }
+        .card-logo { font-style: italic; font-weight: bold; font-size: 1.5rem; color: #fff; }
+
+        /* --- Main Content Grid --- */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .details-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(5px);
+        }
+        .details-card h4 {
+            text-align: left;
+            margin-top: 0;
+            color: var(--primary-red);
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .details-card .info-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0;
+            border-bottom: 1px solid #E5E9F2; font-size: 0.95rem;
+        }
+        .details-card .info-item:last-child { border-bottom: none; }
+        .details-card .info-item strong { color: var(--text-light); }
+        .details-card .info-item span { font-weight: 500; color: var(--text-dark); text-align: right; }
+        
+        .hero-actions { text-align: center; margin: -1rem 0 2rem 0; }
+        
+        .doc-viewer { display: flex; gap: 1.5rem; justify-content: flex-start; flex-wrap: wrap; margin-top: 1rem; }
+        .doc-link { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-decoration: none; cursor: pointer; }
+        .doc-link .preview { display: flex; align-items: center; justify-content: center; width: 220px; height: 130px; border-radius: 12px; border: 1px solid var(--border-color); background-color: #F8FAFC; transition: all 0.2s ease; text-decoration: none; }
+        .doc-link .preview:hover { border-color: var(--primary-red); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); }
+        .doc-link .preview-text { font-weight: 600; font-size: 1rem; color: var(--primary-red); text-align: center; padding: 0.5rem; }
+        .doc-link .doc-title { font-size: 0.9rem; color: var(--text-dark); font-weight: 500; }
+        .grid-col-span-2 { grid-column: span 2; }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: #fff; border-radius: 16px; padding: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 90vw; max-height: 90vh; position: relative;
+        }
+        .modal-content img { max-width: 100%; max-height: 85vh; display: block; border-radius: 8px; }
+        .modal-content iframe { width: 80vw; height: 85vh; border: none; border-radius: 8px; }
+        .modal-close {
+            position: absolute; top: -15px; right: -15px;
+            width: 40px; height: 40px; font-size: 1.5rem;
+            color: var(--primary-red); background: #fff; border-radius: 50%;
+            border: 2px solid var(--primary-red); cursor: pointer; font-weight: bold;
+            z-index: 1001; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1>Welcome, <span th:text="${customer.fullName ?: 'Valued Customer'}"></span>!</h1>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+        </form>
+    </header>
+
+    <main>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+          
+        <div class="status-hero" th:classappend="${customer.kycStatus.toString()}">
+             <div th:switch="${customer.kycStatus.toString()}">
+                <div th:case="'PENDING'">
+                    <i class="fas fa-hourglass-half hero-icon"></i>
+                    <h2>Application in Review</h2>
+                    <p>Our team is carefully reviewing your details. You'll be notified via email as soon as the process is complete.</p>
+                </div>
+                <div th:case="'VERIFIED'">
+                    <th:block th:if="${account != null and account.accountStatus.toString() == 'INACTIVE'}">
+                         <i class="fas fa-user-lock hero-icon"></i>
+                         <h2>Account Deactivated</h2>
+                         <p>Your account is currently inactive. Please contact customer support for further assistance.</p>
+                    </th:block>
+                    <th:block th:unless="${account != null and account.accountStatus.toString() == 'INACTIVE'}">
+                         <h2>Congratulations! Your Account is Active.</h2>
+                         <p>Welcome to OFSS Bank. Your new account is ready to use. Find your details below and start exploring our services.</p>
+                         <div class="virtual-card-container">
+                             <div class="virtual-card">
+                                 <div class="card-chip"></div>
+                                 <div class="card-number" th:text="${account != null ? '**** **** **** ' + account.debitCardLast4Digits : '**** **** **** 1234'}"></div>
+                                 <div class="card-footer">
+                                     <div class="card-holder">CARD HOLDER<br><span th:text="${customer.fullName}"></span></div>
+                                     <div class="card-logo">OFSS</div>
+                                 </div>
+                             </div>
+                         </div>
+                    </th:block>
+                </div>
+                <div th:case="'REJECTED'">
+                    <i class="fas fa-exclamation-triangle hero-icon"></i>
+                    <h2>Action Required</h2>
+                    <p>We couldn't approve your application at this time. Please check your email for the specific reason and re-apply.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-actions">
+            <a th:if="${customer.kycStatus.toString() == 'PENDING'}" th:href="@{/customer/edit}" class="btn">Edit My Application</a>
+            <a th:if="${customer.kycStatus.toString() == 'VERIFIED' and (account == null or account.accountStatus.toString() != 'INACTIVE')}" th:href="@{/customer/edit-profile}" class="btn">Update My Profile</a>
+            <a th:if="${customer.kycStatus.toString() == 'REJECTED'}" th:href="@{/customer/edit}" class="btn btn-danger">Correct and Re-apply</a>
+        </div>
+          
+        <div class="details-grid">
+            <div th:if="${(customer.kycStatus.toString() == 'VERIFIED' or customer.kycStatus.toString() == 'INACTIVE') and account != null}" class="details-card grid-col-span-2">
+                <h4>Your Account Overview</h4>
+                <div class="details-grid">
+                    <div>
+                        <p class="info-item"><strong>Account Number:</strong> <span th:text="${account.accountNumber}"></span></p>
+                        <p class="info-item"><strong>Account Status:</strong> <span class="badge" th:classappend="${account.accountStatus.toString()}" th:text="${account.accountStatus}"></span></p>
+                        <p class="info-item"><strong>Branch Name:</strong> <span th:text="${account.branchName}"></span></p>
+                        <p class="info-item"><strong>IFSC Code:</strong> <span th:text="${account.ifscCode}"></span></p>
+                    </div>
+                    <div>
+                        <p class="info-item"><strong>Net Banking:</strong>
+                            <span th:if="${account.accountStatus.toString() == 'INACTIVE'}" class="badge INACTIVE">INACTIVE</span>
+                            <span th:unless="${account.accountStatus.toString() == 'INACTIVE'}" th:text="${account.netBankingEnabled ? 'Enabled' : 'Disabled'}"></span>
+                        </p>
+                        <p class="info-item"><strong>Debit Card:</strong>
+                            <span th:if="${account.accountStatus.toString() == 'INACTIVE'}" class="badge INACTIVE">INACTIVE</span>
+                            <span th:unless="${account.accountStatus.toString() == 'INACTIVE'}" th:text="${account.debitCardIssued ? 'Issued' : 'Not Issued'}"></span>
+                        </p>
+                        <p class="info-item"><strong>Cheque Book:</strong>
+                            <span th:if="${account.accountStatus.toString() == 'INACTIVE'}" class="badge INACTIVE">INACTIVE</span>
+                            <span th:unless="${account.accountStatus.toString() == 'INACTIVE'}" th:text="${account.chequeBookIssued ? 'Issued' : 'Not Issued'}"></span>
+                        </p>
+                         <p class="info-item"><strong>Nominee:</strong> <span th:text="${account.nomineeRegistered ? 'Registered' : 'Not Registered'}"></span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-card">
+                <h4>Personal Information</h4>
+                <p class="info-item"><strong>Full Name:</strong> <span th:text="${customer.fullName}"></span></p>
+                <p class="info-item"><strong>Email:</strong> <span th:text="${customer.email}"></span></p>
+                <p class="info-item"><strong>Phone:</strong> <span th:text="${customer.phone}"></span></p>
+                <p class="info-item"><strong>Address:</strong> <span th:text="${customer.address}"></span></p>
+                <th:block th:if="${customer.nominee != null and customer.nominee.name != null and not #strings.isEmpty(customer.nominee.name)}">
+                    <p class="info-item"><strong>Nominee Name:</strong> <span th:text="${customer.nominee.name}"></span></p>
+                    <p class="info-item"><strong>Nominee Mobile:</strong> <span th:text="${customer.nominee.mobile}"></span></p>
+                </th:block>
+            </div>
+            
+            <div class="details-card">
+                <h4>Identity Information</h4>
+                <p class="info-item"><strong>PAN:</strong> <span th:text="${customer.pan}"></span></p>
+                <p class="info-item"><strong>Aadhaar:</strong> <span th:text="${customer.aadhaar}"></span></p>
+            </div>
+            
+            <div class="details-card grid-col-span-2" 
+                 th:if="${customer.kycStatus != null and (customer.kycStatus.toString() == 'PENDING' or customer.kycStatus.toString() == 'VERIFIED')}">
+                <h4>My Submitted Documents</h4>
+                <div class="doc-viewer">
+                    <a class="doc-link open-doc-modal"
+                       th:data-doc-base64="${customer.passportPhotoBase64}"
+                       th:data-doc-type="${customer.passportPhotoContentType}">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">Passport Photo</span>
+                    </a>
+                    <a class="doc-link open-doc-modal"
+                       th:data-doc-base64="${customer.panPhotoBase64}"
+                       th:data-doc-type="${customer.panPhotoContentType}">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">PAN Card</span>
+                    </a>
+                    <a class="doc-link open-doc-modal"
+                       th:data-doc-base64="${customer.aadhaarPhotoBase64}"
+                       th:data-doc-type="${customer.aadhaarPhotoContentType}">
+                        <div class="preview"><span class="preview-text">View Document</span></div>
+                        <span class="doc-title">Aadhaar Card</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="docModalOverlay">
+    <div class="modal-content" id="docModalContent"></div>
+    <div class="modal-close" id="docModalClose">&times;</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // This JavaScript will power the modal pop-up
+        const modalOverlay = document.getElementById('docModalOverlay');
+        const modalContent = document.getElementById('docModalContent');
+        const closeModalBtn = document.getElementById('docModalClose');
+        const docLinks = document.querySelectorAll('.open-doc-modal');
+
+        function openModal(base64Data, contentType) {
+            if (!base64Data || !contentType) {
+                // If data is missing, show an error in the modal
+                modalContent.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-dark);">Document preview is not available at this time.</p>';
+            } else if (contentType.startsWith('image/')) {
+                modalContent.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = `data:${contentType};base64,${base64Data}`;
+                modalContent.appendChild(img);
+            } else if (contentType === 'application/pdf') {
+                modalContent.innerHTML = '';
+                const iframe = document.createElement('iframe');
+                iframe.src = `data:${contentType};base64,${base64Data}`;
+                modalContent.appendChild(iframe);
+            } else {
+                modalContent.textContent = 'Unsupported document type.';
+            }
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            modalContent.innerHTML = '';
+        }
+
+        docLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                openModal(this.dataset.docBase64, this.dataset.docType);
+            });
+        });
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(event) {
+            if (event.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modalOverlay.style.display === 'flex') {
+                closeModal();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
